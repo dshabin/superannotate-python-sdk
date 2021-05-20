@@ -151,7 +151,7 @@ def image_consensus(df, image_name, annot_type, majority_vote=False):
                     image_data["createdAt"].append(curr_match_data[5])
                     image_data["attributes"].append(curr_match_data[4])
                     image_data["area"].append(curr_match_data[1].area)
-                    image_data["meta"].append(curr_match_data[5])
+                    image_data["meta"].append(curr_match_data[6])
                     image_data["imageName"].append(image_name)
                     image_data["instanceId"].append(instance_id)
                     image_data["className"].append(curr_match_data[2])
