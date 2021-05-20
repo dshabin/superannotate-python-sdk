@@ -11,8 +11,8 @@ def test_benchmark():
     gt_folder_name = 'consensus_1'
     folder_names = ['consensus_2', 'consensus_3']
     df_column_names = [
-        'creatorEmail', 'imageName', 'instanceId', 'area', 'className',
-        'attributes', 'folderName', 'score'
+        'creatorEmail', 'createdAt', 'imageName', 'instanceId', 'area', 'meta',
+        'className', 'attributes', 'folderName', 'score'
     ]
     export_path = test_root / 'consensus_benchmark' / 'consensus_test_data'
     if len(sa.search_projects(project_name)) != 0:

@@ -27,7 +27,7 @@ def instance_consensus(inst_1, inst_2):
     return score
 
 
-def image_consensus(df, image_name, annot_type):
+def image_consensus(df, image_name, annot_type, majority_vote=False):
     """Helper function that computes consensus score for instances of a single image:
 
     :param df: Annotation data of all images
@@ -41,9 +41,11 @@ def image_consensus(df, image_name, annot_type):
     image_df = df[df["imageName"] == image_name]
     all_projects = list(set(df["folderName"]))
     column_names = [
-        "creatorEmail", "imageName", "instanceId", "area", "className",
-        "attributes", "folderName", "score"
+        "creatorEmail", "createdAt", "imageName", "instanceId", "area", "meta",
+        "className", "attributes", "folderName", "score"
     ]
+    if majority_vote:
+        column_names.append("majorityVote")
     instance_id = 0
     image_data = {}
     for column_name in column_names:
@@ -72,7 +74,7 @@ def image_consensus(df, image_name, annot_type):
             projects_shaply_objs[row["folderName"]].append(
                 (
                     inst, row["className"], row["creatorEmail"],
-                    row["attributes"]
+                    row["attributes"], row["createdAt"], inst_data
                 )
             )
         else:
@@ -87,7 +89,7 @@ def image_consensus(df, image_name, annot_type):
     # match instances
     for curr_proj, curr_proj_instances in projects_shaply_objs.items():
         for curr_id, curr_inst_data in enumerate(curr_proj_instances):
-            curr_inst, curr_class, _, _ = curr_inst_data
+            curr_inst, curr_class, _, _, _, _ = curr_inst_data
             if visited_instances[curr_proj][curr_id] == True:
                 continue
             max_instances = []
@@ -106,7 +108,7 @@ def image_consensus(df, image_name, annot_type):
                     for other_id, other_inst_data in enumerate(
                         other_proj_instances
                     ):
-                        other_inst, other_class, _, _ = other_inst_data
+                        other_inst, other_class, _, _, _, _ = other_inst_data
                         if visited_instances[other_proj][other_id] == True:
                             continue
                         score = instance_consensus(curr_inst, other_inst)
@@ -119,15 +121,21 @@ def image_consensus(df, image_name, annot_type):
                         visited_instances[other_proj][max_inst_id] = True
             if len(max_instances) == 1:
                 image_data["creatorEmail"].append(max_instances[0][3])
+                image_data["createdAt"].append(max_instances[0][5])
                 image_data["attributes"].append(max_instances[0][4])
                 image_data["area"].append(max_instances[0][1].area)
+                image_data["meta"].append(max_instances[0][6])
                 image_data["imageName"].append(image_name)
                 image_data["instanceId"].append(instance_id)
                 image_data["className"].append(max_instances[0][2])
                 image_data["folderName"].append(max_instances[0][0])
                 image_data["score"].append(0)
+                if majority_vote:
+                    image_data["majorityVote"].append(False)
             else:
-                for curr_match_data in max_instances:
+                max_match_score = -1
+                max_match_id = -1
+                for score_inst_id, curr_match_data in enumerate(max_instances):
                     proj_cons = 0
                     for other_match_data in max_instances:
                         if curr_match_data[0] != other_match_data[0]:
@@ -135,16 +143,25 @@ def image_consensus(df, image_name, annot_type):
                                 curr_match_data[1], other_match_data[1]
                             )
                             proj_cons += (1. if score <= 0 else score)
+                    proj_cons /= (len(all_projects) - 1)
+                    if proj_cons > max_match_score:
+                        max_match_score = proj_cons
+                        max_match_id = score_inst_id
                     image_data["creatorEmail"].append(curr_match_data[3])
+                    image_data["createdAt"].append(curr_match_data[5])
                     image_data["attributes"].append(curr_match_data[4])
                     image_data["area"].append(curr_match_data[1].area)
+                    image_data["meta"].append(curr_match_data[5])
                     image_data["imageName"].append(image_name)
                     image_data["instanceId"].append(instance_id)
                     image_data["className"].append(curr_match_data[2])
                     image_data["folderName"].append(curr_match_data[0])
-                    image_data["score"].append(
-                        proj_cons / (len(all_projects) - 1)
-                    )
+                    image_data["score"].append(proj_cons)
+                if majority_vote:
+                    votes = [False] * len(max_instances)
+                    votes[max_match_id] = True
+                    image_data["majorityVote"].extend(votes)
+
             instance_id += 1
 
     return image_data

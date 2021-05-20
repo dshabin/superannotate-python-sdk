@@ -10,8 +10,8 @@ def test_consensus():
     annot_types = ['polygon', 'bbox', 'point']
     folder_names = ['consensus_1', 'consensus_2', 'consensus_3']
     df_column_names = [
-        'creatorEmail', 'imageName', 'instanceId', 'area', 'className',
-        'attributes', 'folderName', 'score'
+        'creatorEmail', 'createdAt', 'imageName', 'instanceId', 'area', 'meta',
+        'className', 'attributes', 'folderName', 'score', 'majorityVote'
     ]
     export_path = test_root / 'consensus_benchmark' / 'consensus_test_data'
     if len(sa.search_projects(project_name)) != 0:

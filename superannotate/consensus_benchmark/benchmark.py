@@ -41,7 +41,7 @@ def benchmark(
     :param show_plots: If True, show plots based on results of consensus computation. Default: False
     :type show_plots: bool
 
-    :return: Pandas DateFrame with columns (creatorEmail, QA, imageName, instanceId, className, area, attribute, folderName, score)
+    :return: Pandas DateFrame with columns (creatorEmail, createdAt, imageName, instanceId, className, area, meta, attribute, folderName, score)
     :rtype: pandas DataFrame
     """
     def aggregate_attributes(instance_df):

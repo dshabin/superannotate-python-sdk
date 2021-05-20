@@ -38,7 +38,7 @@ def consensus(
     :param show_plots: If True, show plots based on results of consensus computation. Default: False
     :type show_plots: bool
 
-    :return: Pandas DateFrame with columns (creatorEmail, QA, imageName, instanceId, className, area, attribute, folderName, score)
+    :return: Pandas DateFrame with columns (creatorEmail, createdAt, imageName, instanceId, className, area, meta, attribute, folderName, score, majorityVote)
     :rtype: pandas DataFrame
     """
     supported_types = ['polygon', 'bbox', 'point']
@@ -102,7 +102,9 @@ def consensus(
     unique_images = set(all_projects_df["imageName"])
     all_consensus_data = []
     for image_name in unique_images:
-        image_data = image_consensus(all_projects_df, image_name, annot_type)
+        image_data = image_consensus(
+            all_projects_df, image_name, annot_type, majority_vote=True
+        )
         all_consensus_data.append(pd.DataFrame(image_data))
 
     consensus_df = pd.concat(all_consensus_data, ignore_index=True)
